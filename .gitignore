@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.log
+.DS_Store
+
+# Excluir logos de equipos (son muy grandes para GitHub)
+# Los logos se subirán manualmente o se usarán desde otro lugar
+public/teams/
+

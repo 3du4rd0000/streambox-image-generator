@@ -1,0 +1,21 @@
+{
+  "name": "streambox-image-generator",
+  "version": "1.0.0",
+  "description": "API externa para generar imágenes de resultados deportivos con Canvas",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "canvas": "^2.11.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
