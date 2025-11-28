@@ -6,11 +6,17 @@ Coloca tu imagen de fondo en:
 ```
 public/backgrounds/match-result-background.png
 ```
+O también puedes usar SVG:
+```
+public/backgrounds/match-result-background.svg
+```
 
 ## Especificaciones de la Imagen
 
 - **Dimensiones**: 1080x1080 píxeles (o proporcional)
-- **Formato**: PNG (con transparencia si es necesario)
+- **Formato**: PNG o SVG (ambos son soportados)
+  - **PNG**: Se carga directamente
+  - **SVG**: Se convierte automáticamente a PNG usando `sharp`
 - **Contenido**: 
   - Fondo con gradiente rojo/azul de StreamBox (#E41E26 y #0052A5)
   - Texto "FINAL" en la parte inferior
@@ -24,8 +30,12 @@ public/backgrounds/match-result-background.png
 
 El código ahora solo dibuja:
 1. **Logos de equipos** (200x200 píxeles cada uno)
+   - Posición izquierda: x=300, y=250
+   - Posición derecha: x=780, y=250
 2. **Marcadores** (números grandes, 120px, color rojo #E41E26)
-3. **Título de liga** (si no está en la imagen de fondo)
+   - Posición izquierda: x=300, y=400
+   - Posición derecha: x=780, y=400
+3. **Título de liga** (se sobrescribe dinámicamente en x=540, y=80)
 
 ## Si No Hay Imagen de Fondo
 

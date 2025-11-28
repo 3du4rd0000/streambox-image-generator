@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <defs>
+    <!-- Gradiente diagonal rojo/azul StreamBox -->
+    <linearGradient id="streamBoxGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E41E26;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8B1A1F;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0052A5;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Sombra para texto -->
+    <filter id="textShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fondo con gradiente -->
+  <rect width="1080" height="1080" fill="url(#streamBoxGradient)"/>
+  
+  <!-- Título de liga (se puede sobrescribir dinámicamente) -->
+  <text x="540" y="80" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="bold" fill="#FFFFFF" text-anchor="middle" filter="url(#textShadow)">LEAGUE</text>
+  
+  <!-- Línea divisoria vertical en el centro -->
+  <line x1="540" y1="240" x2="540" y2="660" stroke="#FFFFFF" stroke-width="3" stroke-opacity="0.25"/>
+  
+  <!-- Texto "VS" en el centro -->
+  <text x="540" y="450" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF" text-anchor="middle" opacity="0.8" filter="url(#textShadow)">VS</text>
+  
+  <!-- Texto "FINAL" en la parte inferior -->
+  <text x="540" y="960" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="bold" fill="#FFFFFF" text-anchor="middle" filter="url(#textShadow)">FINAL</text>
+  
+  <!-- Guías visuales (opcionales, se pueden comentar después) -->
+  <!-- 
+  <circle cx="300" cy="350" r="100" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.2" stroke-dasharray="5,5"/>
+  <text x="300" y="480" font-family="Arial" font-size="16" fill="#FFFFFF" text-anchor="middle" opacity="0.3">LOGO IZQ</text>
+  
+  <circle cx="780" cy="350" r="100" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.2" stroke-dasharray="5,5"/>
+  <text x="780" y="480" font-family="Arial" font-size="16" fill="#FFFFFF" text-anchor="middle" opacity="0.3">LOGO DER</text>
+  
+  <rect x="200" y="500" width="200" height="80" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.2" stroke-dasharray="5,5"/>
+  <text x="300" y="600" font-family="Arial" font-size="16" fill="#FFFFFF" text-anchor="middle" opacity="0.3">SCORE IZQ</text>
+  
+  <rect x="680" y="500" width="200" height="80" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.2" stroke-dasharray="5,5"/>
+  <text x="780" y="600" font-family="Arial" font-size="16" fill="#FFFFFF" text-anchor="middle" opacity="0.3">SCORE DER</text>
+  -->
+</svg>
+
