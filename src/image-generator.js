@@ -126,12 +126,14 @@ async function loadTeamLogo(teamName, sport, league) {
 }
 
 /**
- * Dibuja el fondo con gradiente
+ * Dibuja el fondo con gradiente rojo/azul de StreamBox
  */
 function drawBackground(ctx, width, height) {
-  const gradient = ctx.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, '#000000');
-  gradient.addColorStop(1, '#001122');
+  // Gradiente diagonal de rojo a azul (colores StreamBox)
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, '#E41E26'); // Rojo StreamBox
+  gradient.addColorStop(0.5, '#8B1A1F'); // Rojo oscuro en el medio
+  gradient.addColorStop(1, '#0052A5'); // Azul StreamBox
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
 }
@@ -141,10 +143,11 @@ function drawBackground(ctx, width, height) {
  */
 function drawLeagueTitle(ctx, league, width) {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 32px Inter, Arial, sans-serif';
+  ctx.font = 'bold 32px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText(league.toUpperCase(), width / 2, 60);
+  const leagueText = (league || 'GAME').toUpperCase();
+  ctx.fillText(leagueText, width / 2, 60);
 }
 
 /**
@@ -180,14 +183,14 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
     console.warn(`[ImageGenerator] Could not load logo for ${team.name}:`, error.message);
   }
 
-  // Nombre del equipo
+  // Nombre del equipo - Asegurar que se dibuje
   ctx.fillStyle = '#0052A5'; // Azul StreamBox
-  ctx.font = 'bold 44px Inter, Arial, sans-serif';
+  ctx.font = 'bold 44px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   
   // Truncar nombre si es muy largo
-  let teamName = team.name;
+  let teamName = team.name || 'Team';
   if (teamName.length > 18) {
     teamName = teamName.substring(0, 18) + '...';
   }
@@ -198,6 +201,7 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 2;
   
+  // Dibujar nombre del equipo
   ctx.fillText(teamName.toUpperCase(), x, nameY);
   
   // Resetear sombra
@@ -206,9 +210,9 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
 
-  // Marcador
+  // Marcador - Asegurar que se dibuje
   ctx.fillStyle = '#E41E26'; // Rojo StreamBox
-  ctx.font = 'bold 96px Inter, Arial, sans-serif';
+  ctx.font = 'bold 96px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
   
   // Sombra más pronunciada en el marcador
   ctx.shadowColor = 'rgba(228, 30, 38, 0.3)';
@@ -216,7 +220,9 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 4;
   
-  ctx.fillText(team.score.toString(), x, scoreY);
+  // Dibujar marcador
+  const scoreText = (team.score || 0).toString();
+  ctx.fillText(scoreText, x, scoreY);
   
   // Resetear sombra
   ctx.shadowColor = 'transparent';
@@ -230,9 +236,10 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
  */
 function drawFinalText(ctx, width, height) {
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 40px Inter, Arial, sans-serif';
+  ctx.font = 'bold 40px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  // Asegurar que el texto se dibuje
   ctx.fillText('FINAL', width / 2, height - 120);
 }
 
@@ -292,7 +299,7 @@ export async function generateMatchResultImage(gameData, options = {}) {
   
   // Texto "VS" en el centro
   ctx.fillStyle = '#FFFFFF80';
-  ctx.font = 'bold 32px Inter, Arial, sans-serif';
+  ctx.font = 'bold 32px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('VS', centerX, teamY + 200);
@@ -303,4 +310,6 @@ export async function generateMatchResultImage(gameData, options = {}) {
   // 7. Convertir a buffer PNG
   return canvas.toBuffer('image/png');
 }
+
+
 
