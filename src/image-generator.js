@@ -193,16 +193,53 @@ async function loadTeamLogo(teamName, sport, league) {
 }
 
 /**
- * Carga la imagen de fondo pre-diseñada
+ * Convierte SVG a imagen usando sharp (si está disponible) o fallback
+ */
+async function convertSvgToImage(svgPath) {
+  try {
+    // Intentar usar sharp si está disponible
+    const sharp = await import('sharp').catch(() => null);
+    if (sharp) {
+      const svgBuffer = fs.readFileSync(svgPath);
+      const pngBuffer = await sharp.default(svgBuffer)
+        .resize(1080, 1080, { fit: 'fill' })
+        .png()
+        .toBuffer();
+      return await loadImage(pngBuffer);
+    }
+  } catch (error) {
+    console.warn(`[ImageGenerator] Error converting SVG with sharp:`, error.message);
+  }
+  
+  // Fallback: intentar cargar SVG directamente (puede no funcionar)
+  try {
+    return await loadImage(svgPath);
+  } catch (error) {
+    console.warn(`[ImageGenerator] SVG direct load failed:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Carga la imagen de fondo pre-diseñada (PNG o SVG)
  */
 async function loadBackgroundImage() {
   try {
-    const backgroundPath = path.join(__dirname, '../public/backgrounds/match-result-background.png');
-    if (fs.existsSync(backgroundPath)) {
-      console.log(`[ImageGenerator] Loading background image from: ${backgroundPath}`);
-      return await loadImage(backgroundPath);
+    // Intentar primero PNG
+    const pngPath = path.join(__dirname, '../public/backgrounds/match-result-background.png');
+    if (fs.existsSync(pngPath)) {
+      console.log(`[ImageGenerator] Loading background PNG from: ${pngPath}`);
+      return await loadImage(pngPath);
     }
-    console.warn(`[ImageGenerator] Background image not found at ${backgroundPath}, using gradient fallback`);
+    
+    // Si no existe PNG, intentar SVG
+    const svgPath = path.join(__dirname, '../public/backgrounds/match-result-background.svg');
+    if (fs.existsSync(svgPath)) {
+      console.log(`[ImageGenerator] Loading background SVG from: ${svgPath}`);
+      return await convertSvgToImage(svgPath);
+    }
+    
+    console.warn(`[ImageGenerator] Background image not found (checked .png and .svg), using gradient fallback`);
     return null;
   } catch (error) {
     console.warn(`[ImageGenerator] Error loading background image:`, error.message);
