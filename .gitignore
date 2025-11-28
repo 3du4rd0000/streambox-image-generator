@@ -3,6 +3,8 @@ node_modules/
 *.log
 .DS_Store
 
-# Logos de equipos incluidos en el repositorio para Render
-# public/teams/  (incluidos - Render los descargará automáticamente)
+# Logos de equipos - NO incluir en Git (se descargan desde Vercel Blob Storage)
+public/teams/
+*.tar.gz
+teams-logos.tar.gz
 
