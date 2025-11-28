@@ -210,13 +210,33 @@ function drawBackground(ctx, width, height) {
  */
 function drawLeagueTitle(ctx, league, width) {
   ctx.save();
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 32px Arial, Helvetica, sans-serif'; // Sin comillas
+  
+  const leagueX = width / 2;
+  const leagueY = 60;
+  const leagueText = (league || 'GAME').toUpperCase();
+  
+  // Configurar fuente y medir texto
+  ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  const leagueText = (league || 'GAME').toUpperCase();
-  console.log(`[ImageGenerator] Drawing league title: "${leagueText}" at (${width / 2}, 60)`);
-  ctx.fillText(leagueText, width / 2, 60);
+  const leagueMetrics = ctx.measureText(leagueText);
+  const leagueWidth = leagueMetrics.width;
+  const leagueHeight = 40;
+  
+  // Dibujar fondo blanco semi-transparente para el título de liga
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.fillRect(leagueX - leagueWidth / 2 - 15, leagueY - 5, leagueWidth + 30, leagueHeight + 10);
+  
+  // Asegurar que NO hay sombras
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  
+  ctx.fillStyle = '#FFFFFF';
+  
+  console.log(`[ImageGenerator] Drawing league title: "${leagueText}" at (${leagueX}, ${leagueY}), width: ${leagueWidth}`);
+  ctx.fillText(leagueText, leagueX, leagueY);
   ctx.restore();
 }
 
@@ -254,19 +274,13 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   // Nombre del equipo - Dibujar DESPUÉS del logo, completamente aislado
   ctx.save();
   
-  // Asegurar que NO hay sombras
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
-  
   // Truncar nombre si es muy largo
   let teamName = team.name || 'Team';
   if (teamName.length > 18) {
     teamName = teamName.substring(0, 18) + '...';
   }
   
-  // Medir el texto para dibujar un fondo
+  // Configurar fuente y medir texto ANTES de dibujar
   ctx.font = 'bold 44px Arial, Helvetica, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -274,9 +288,15 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   const textWidth = textMetrics.width;
   const textHeight = 50; // Aproximado para 44px font
   
-  // Dibujar fondo semi-transparente para el texto (opcional, para debug)
-  // ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-  // ctx.fillRect(x - textWidth / 2 - 10, nameY - 5, textWidth + 20, textHeight + 10);
+  // Dibujar fondo blanco semi-transparente para el texto (para visibilidad)
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.fillRect(x - textWidth / 2 - 15, nameY - 5, textWidth + 30, textHeight + 10);
+  
+  // Asegurar que NO hay sombras
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   
   // Configurar estilo de texto
   ctx.fillStyle = '#0052A5'; // Azul StreamBox
@@ -290,15 +310,9 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   // Marcador - Dibujar en un contexto completamente separado
   ctx.save();
   
-  // Asegurar que NO hay sombras
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
-  
   const scoreText = (team.score || 0).toString();
   
-  // Configurar fuente y medir texto
+  // Configurar fuente y medir texto ANTES de dibujar
   ctx.font = 'bold 96px Arial, Helvetica, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -306,9 +320,15 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   const scoreWidth = scoreMetrics.width;
   const scoreHeight = 110; // Aproximado para 96px font
   
-  // Dibujar fondo semi-transparente para el marcador (opcional, para debug)
-  // ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-  // ctx.fillRect(x - scoreWidth / 2 - 10, scoreY - 5, scoreWidth + 20, scoreHeight + 10);
+  // Dibujar fondo blanco semi-transparente para el marcador (para visibilidad)
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.fillRect(x - scoreWidth / 2 - 15, scoreY - 5, scoreWidth + 30, scoreHeight + 10);
+  
+  // Asegurar que NO hay sombras
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   
   ctx.fillStyle = '#E41E26'; // Rojo StreamBox
   
@@ -324,13 +344,32 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
  */
 function drawFinalText(ctx, width, height) {
   ctx.save();
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 40px Arial, Helvetica, sans-serif'; // Sin comillas
+  
+  const finalX = width / 2;
+  const finalY = height - 120;
+  
+  // Configurar fuente y medir texto
+  ctx.font = 'bold 40px Arial, Helvetica, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  const finalY = height - 120;
-  console.log(`[ImageGenerator] Drawing FINAL text at (${width / 2}, ${finalY})`);
-  ctx.fillText('FINAL', width / 2, finalY);
+  const finalMetrics = ctx.measureText('FINAL');
+  const finalWidth = finalMetrics.width;
+  const finalHeight = 50;
+  
+  // Dibujar fondo blanco semi-transparente para el texto FINAL
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  ctx.fillRect(finalX - finalWidth / 2 - 15, finalY - finalHeight / 2 - 5, finalWidth + 30, finalHeight + 10);
+  
+  // Asegurar que NO hay sombras
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  
+  ctx.fillStyle = '#FFFFFF';
+  
+  console.log(`[ImageGenerator] Drawing FINAL text at (${finalX}, ${finalY}), width: ${finalWidth}`);
+  ctx.fillText('FINAL', finalX, finalY);
   ctx.restore();
 }
 
