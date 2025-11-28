@@ -127,3 +127,5 @@ Una vez configurado:
 - ✅ Recibe la imagen y la guarda en Vercel Blob Storage
 - ✅ Todo funciona sin problemas de Turbopack
 
+
+

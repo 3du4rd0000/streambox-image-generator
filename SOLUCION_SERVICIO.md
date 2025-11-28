@@ -36,3 +36,5 @@ railway variables --set "TEAMS_PATH=/app/public/teams"
 
 **Usa `railway up` directamente** - Railway creará el servicio automáticamente cuando detecte que no hay uno vinculado.
 
+
+

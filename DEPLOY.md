@@ -167,3 +167,5 @@ Ver `docs/backend/ACTUALIZAR_CRON_VERCEL.md` para instrucciones de actualizar el
 - [ ] Variable `IMAGE_GENERATOR_API_URL` configurada en Vercel
 - [ ] Cron job actualizado para usar la API externa
 
+
+

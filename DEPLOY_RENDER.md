@@ -33,6 +33,7 @@ git commit -m "Image generator service"
 1. En Render Dashboard, click en **"New +"**
 2. Selecciona **"Web Service"**
 3. Conecta tu repositorio GitHub
+https://github.com/3du4rd0000/streambox-image-generator
 4. Selecciona el repositorio con `image-generator-service`
 
 ### Paso 4: Configurar Servicio
@@ -120,4 +121,6 @@ Ya está configurado así ✅
 - [ ] Despliegue exitoso
 - [ ] Health check funciona
 - [ ] URL agregada en Vercel como `IMAGE_GENERATOR_API_URL`
+
+
 

@@ -193,16 +193,43 @@ async function loadTeamLogo(teamName, sport, league) {
 }
 
 /**
- * Dibuja el fondo con gradiente rojo/azul de StreamBox
+ * Carga la imagen de fondo pre-diseñada
  */
-function drawBackground(ctx, width, height) {
-  // Gradiente diagonal de rojo a azul (colores StreamBox)
-  const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, '#E41E26'); // Rojo StreamBox
-  gradient.addColorStop(0.5, '#8B1A1F'); // Rojo oscuro en el medio
-  gradient.addColorStop(1, '#0052A5'); // Azul StreamBox
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
+async function loadBackgroundImage() {
+  try {
+    const backgroundPath = path.join(__dirname, '../public/backgrounds/match-result-background.png');
+    if (fs.existsSync(backgroundPath)) {
+      console.log(`[ImageGenerator] Loading background image from: ${backgroundPath}`);
+      return await loadImage(backgroundPath);
+    }
+    console.warn(`[ImageGenerator] Background image not found at ${backgroundPath}, using gradient fallback`);
+    return null;
+  } catch (error) {
+    console.warn(`[ImageGenerator] Error loading background image:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Dibuja el fondo: primero intenta cargar imagen, si no existe usa gradiente
+ */
+async function drawBackground(ctx, width, height) {
+  const bgImage = await loadBackgroundImage();
+  
+  if (bgImage) {
+    // Dibujar imagen de fondo escalada al tamaño del canvas
+    ctx.drawImage(bgImage, 0, 0, width, height);
+    console.log(`[ImageGenerator] ✅ Background image drawn`);
+  } else {
+    // Fallback: Gradiente diagonal de rojo a azul (colores StreamBox)
+    console.log(`[ImageGenerator] Using gradient fallback for background`);
+    const gradient = ctx.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, '#E41E26'); // Rojo StreamBox
+    gradient.addColorStop(0.5, '#8B1A1F'); // Rojo oscuro en el medio
+    gradient.addColorStop(1, '#0052A5'); // Azul StreamBox
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+  }
 }
 
 /**
@@ -247,7 +274,7 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   const logoSize = 200;
   const logoY = y;
   const nameY = logoY + logoSize + 25;
-  const scoreY = nameY + 60;
+  const scoreY = y + logoSize + 150; // Ajustar posición del marcador (más abajo)
 
   // Logo del equipo - Aislar completamente con save/restore
   try {
@@ -271,58 +298,56 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
     console.warn(`[ImageGenerator] Could not load logo for ${team.name}:`, error.message);
   }
 
-  // Nombre del equipo - Dibujar DESPUÉS del logo, completamente aislado
+  // Nombre del equipo - Solo dibujar si no hay imagen de fondo (opcional)
+  // Por ahora lo comentamos ya que estará en la imagen de fondo
+  // Si quieres nombres dinámicos, descomenta esto:
+  /*
   ctx.save();
   
-  // Truncar nombre si es muy largo
   let teamName = team.name || 'Team';
   if (teamName.length > 18) {
     teamName = teamName.substring(0, 18) + '...';
   }
   
-  // Configurar fuente y medir texto ANTES de dibujar
   ctx.font = 'bold 44px Arial, Helvetica, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   const textMetrics = ctx.measureText(teamName.toUpperCase());
   const textWidth = textMetrics.width;
-  const textHeight = 50; // Aproximado para 44px font
+  const textHeight = 50;
   
-  // Dibujar fondo blanco semi-transparente para el texto (para visibilidad)
   ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
   ctx.fillRect(x - textWidth / 2 - 15, nameY - 5, textWidth + 30, textHeight + 10);
   
-  // Asegurar que NO hay sombras
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   
-  // Configurar estilo de texto
-  ctx.fillStyle = '#0052A5'; // Azul StreamBox
+  ctx.fillStyle = '#0052A5';
   
-  // Dibujar nombre del equipo
-  console.log(`[ImageGenerator] Drawing team name: "${teamName.toUpperCase()}" at (${x}, ${nameY}), width: ${textWidth}`);
+  console.log(`[ImageGenerator] Drawing team name: "${teamName.toUpperCase()}" at (${x}, ${nameY})`);
   ctx.fillText(teamName.toUpperCase(), x, nameY);
   
   ctx.restore();
+  */
 
-  // Marcador - Dibujar en un contexto completamente separado
+  // Marcador - ESTE ES EL ELEMENTO MÁS IMPORTANTE, debe dibujarse siempre
   ctx.save();
   
   const scoreText = (team.score || 0).toString();
   
-  // Configurar fuente y medir texto ANTES de dibujar
-  ctx.font = 'bold 96px Arial, Helvetica, sans-serif';
+  // Configurar fuente grande y visible para el marcador
+  ctx.font = 'bold 120px Arial, Helvetica, sans-serif'; // Más grande para mejor visibilidad
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
+  ctx.textBaseline = 'middle'; // Cambiar a middle para mejor alineación
   const scoreMetrics = ctx.measureText(scoreText);
   const scoreWidth = scoreMetrics.width;
-  const scoreHeight = 110; // Aproximado para 96px font
+  const scoreHeight = 140;
   
-  // Dibujar fondo blanco semi-transparente para el marcador (para visibilidad)
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-  ctx.fillRect(x - scoreWidth / 2 - 15, scoreY - 5, scoreWidth + 30, scoreHeight + 10);
+  // Dibujar fondo sólido blanco detrás del marcador para máxima visibilidad
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // Casi opaco
+  ctx.fillRect(x - scoreWidth / 2 - 20, scoreY - scoreHeight / 2 - 10, scoreWidth + 40, scoreHeight + 20);
   
   // Asegurar que NO hay sombras
   ctx.shadowColor = 'transparent';
@@ -330,7 +355,8 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   
-  ctx.fillStyle = '#E41E26'; // Rojo StreamBox
+  // Color del marcador: rojo StreamBox
+  ctx.fillStyle = '#E41E26';
   
   // Dibujar marcador
   console.log(`[ImageGenerator] Drawing score: "${scoreText}" at (${x}, ${scoreY}), width: ${scoreWidth}`);
@@ -385,9 +411,9 @@ export async function generateMatchResultImage(gameData, options = {}) {
   const canvas = createCanvas(opts.width, opts.height);
   const ctx = canvas.getContext('2d');
 
-  // 1. Fondo con gradiente
+  // 1. Fondo (imagen o gradiente)
   console.log(`[ImageGenerator] 🎨 Step 1: Drawing background...`);
-  drawBackground(ctx, opts.width, opts.height);
+  await drawBackground(ctx, opts.width, opts.height);
 
   // 2. Título de la liga
   const leagueName = gameData.league || gameData.sport.toUpperCase();
@@ -427,29 +453,34 @@ export async function generateMatchResultImage(gameData, options = {}) {
     gameData.league
   );
 
-  // 5. Línea divisoria entre equipos (VS)
-  console.log(`[ImageGenerator] 🎨 Step 5: Drawing divider and VS text...`);
-  ctx.strokeStyle = '#FFFFFF40';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(centerX, teamY - 10);
-  ctx.lineTo(centerX, teamY + 420);
-  ctx.stroke();
-  
-  // Texto "VS" en el centro
-  ctx.save();
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // Blanco con opacidad
-  ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const vsY = teamY + 200;
-  console.log(`[ImageGenerator] Drawing VS text at (${centerX}, ${vsY})`);
-  ctx.fillText('VS', centerX, vsY);
-  ctx.restore();
+  // 5. VS y FINAL ya están en la imagen de fondo, solo dibujamos elementos dinámicos
+  // (Si no hay imagen de fondo, dibujamos VS y FINAL como antes)
+  const bgImage = await loadBackgroundImage();
+  if (!bgImage) {
+    console.log(`[ImageGenerator] 🎨 Step 5: Drawing divider and VS text (fallback)...`);
+    ctx.strokeStyle = '#FFFFFF40';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(centerX, teamY - 10);
+    ctx.lineTo(centerX, teamY + 420);
+    ctx.stroke();
+    
+    // Texto "VS" en el centro
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const vsY = teamY + 200;
+    console.log(`[ImageGenerator] Drawing VS text at (${centerX}, ${vsY})`);
+    ctx.fillText('VS', centerX, vsY);
+    ctx.restore();
 
-  // 6. Texto "FINAL"
-  console.log(`[ImageGenerator] 🎨 Step 6: Drawing FINAL text...`);
-  drawFinalText(ctx, opts.width, opts.height);
+    console.log(`[ImageGenerator] 🎨 Step 6: Drawing FINAL text (fallback)...`);
+    drawFinalText(ctx, opts.width, opts.height);
+  } else {
+    console.log(`[ImageGenerator] 🎨 Step 5-6: VS and FINAL are in background image, skipping`);
+  }
 
   // 7. Convertir a buffer PNG
   console.log(`[ImageGenerator] ✅ Image generation complete, converting to PNG...`);

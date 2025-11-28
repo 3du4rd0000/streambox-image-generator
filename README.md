@@ -157,3 +157,5 @@ const imageBuffer = await response.arrayBuffer();
 ### Error: "Port already in use"
 - Cambiar `PORT` en `.env` o variable de entorno
 
+
+

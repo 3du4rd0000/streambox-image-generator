@@ -66,3 +66,5 @@ IMAGE_GENERATOR_API_URL=https://tu-proyecto.up.railway.app
 
 El cron job de Vercel ahora usará la API externa para generar imágenes.
 
+
+
