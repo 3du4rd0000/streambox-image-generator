@@ -209,12 +209,15 @@ function drawBackground(ctx, width, height) {
  * Dibuja el título de la liga
  */
 function drawLeagueTitle(ctx, league, width) {
+  ctx.save();
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 32px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
+  ctx.font = 'bold 32px Arial, Helvetica, sans-serif'; // Sin comillas
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   const leagueText = (league || 'GAME').toUpperCase();
+  console.log(`[ImageGenerator] Drawing league title: "${leagueText}" at (${width / 2}, 60)`);
   ctx.fillText(leagueText, width / 2, 60);
+  ctx.restore();
 }
 
 /**
@@ -251,8 +254,11 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   }
 
   // Nombre del equipo - Asegurar que se dibuje
+  ctx.save();
+  
+  // Configurar estilo de texto
   ctx.fillStyle = '#0052A5'; // Azul StreamBox
-  ctx.font = 'bold 44px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
+  ctx.font = 'bold 44px Arial, Helvetica, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   
@@ -262,52 +268,41 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
     teamName = teamName.substring(0, 18) + '...';
   }
   
-  // Sombra sutil en el texto
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  ctx.shadowBlur = 4;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 2;
-  
   // Dibujar nombre del equipo
+  console.log(`[ImageGenerator] Drawing team name: "${teamName.toUpperCase()}" at (${x}, ${nameY})`);
   ctx.fillText(teamName.toUpperCase(), x, nameY);
   
-  // Resetear sombra
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
+  ctx.restore();
 
-  // Marcador - Asegurar que se dibuje
-  ctx.fillStyle = '#E41E26'; // Rojo StreamBox
-  ctx.font = 'bold 96px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
+  // Marcador - Asegurar que se dibuje (en un save/restore separado)
+  ctx.save();
   
-  // Sombra más pronunciada en el marcador
-  ctx.shadowColor = 'rgba(228, 30, 38, 0.3)';
-  ctx.shadowBlur = 8;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 4;
+  ctx.fillStyle = '#E41E26'; // Rojo StreamBox
+  ctx.font = 'bold 96px Arial, Helvetica, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
   
   // Dibujar marcador
   const scoreText = (team.score || 0).toString();
+  console.log(`[ImageGenerator] Drawing score: "${scoreText}" at (${x}, ${scoreY})`);
   ctx.fillText(scoreText, x, scoreY);
   
-  // Resetear sombra
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
+  ctx.restore();
 }
 
 /**
  * Dibuja el texto "FINAL"
  */
 function drawFinalText(ctx, width, height) {
+  ctx.save();
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 40px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
+  ctx.font = 'bold 40px Arial, Helvetica, sans-serif'; // Sin comillas
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  // Asegurar que el texto se dibuje
-  ctx.fillText('FINAL', width / 2, height - 120);
+  const finalY = height - 120;
+  console.log(`[ImageGenerator] Drawing FINAL text at (${width / 2}, ${finalY})`);
+  ctx.fillText('FINAL', width / 2, finalY);
+  ctx.restore();
 }
 
 /**
@@ -374,11 +369,15 @@ export async function generateMatchResultImage(gameData, options = {}) {
   ctx.stroke();
   
   // Texto "VS" en el centro
-  ctx.fillStyle = '#FFFFFF80';
-  ctx.font = 'bold 32px "Arial", "Helvetica", sans-serif';
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // Blanco con opacidad
+  ctx.font = 'bold 32px Arial, Helvetica, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('VS', centerX, teamY + 200);
+  const vsY = teamY + 200;
+  console.log(`[ImageGenerator] Drawing VS text at (${centerX}, ${vsY})`);
+  ctx.fillText('VS', centerX, vsY);
+  ctx.restore();
 
   // 6. Texto "FINAL"
   console.log(`[ImageGenerator] 🎨 Step 6: Drawing FINAL text...`);
