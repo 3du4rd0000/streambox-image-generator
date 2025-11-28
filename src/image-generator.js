@@ -53,15 +53,34 @@ const SOCCER_LEAGUE_TO_FOLDER = {
   'UCL': 'championsyeuropa',
 };
 
+// Mapeo explícito de nombres de equipos a nombres de archivos (para casos especiales)
+const TEAM_NAME_TO_FILENAME = {
+  // NFL
+  'kansas city chiefs': 'KansasCityChiefs',
+  'kansas city': 'KansasCityChiefs',
+  'chiefs': 'KansasCityChiefs',
+  'green bay packers': 'GreenBayPackers',
+  'detroit lions': 'DetroitLions',
+  'dallas cowboys': 'DallasCowboys',
+  'pittsburgh steelers': 'PittsburghSteelers',
+  'buffalo bills': 'BuffaloBills',
+  // MLB
+  'los angeles dodgers': 'LosAngelesDodgers',
+  'toronto blue jays': 'TorontoBlueJays',
+  // Agregar más según sea necesario
+};
+
 /**
  * Normaliza el nombre del equipo para buscar el logo
+ * NO elimina palabras importantes como "city", "chiefs", etc.
  */
 function normalizeTeamName(teamName) {
   return teamName
     .toLowerCase()
-    .replace(/\b(fc|cf|sc|deportivo|club|team|united|city|athletic|real|inter|ac|borussia)\b/gi, '')
-    .replace(/[^a-z0-9]/g, '')
-    .replace(/\s+/g, '');
+    .replace(/\b(fc|cf|sc|deportivo|club|team|united|athletic|real|inter|ac|borussia)\b/gi, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '')
+    .trim();
 }
 
 /**
@@ -85,16 +104,64 @@ function findTeamLogo(teamName, sport, league) {
   }
 
   // Buscar archivo del logo
+  const teamNameLower = teamName.toLowerCase().trim();
   const normalizedName = normalizeTeamName(teamName);
   const files = fs.readdirSync(logoFolder);
   
-  // Buscar por nombre normalizado
+  console.log(`[ImageGenerator] Searching for logo: "${teamName}" (normalized: "${normalizedName}") in folder: ${logoFolder}`);
+  console.log(`[ImageGenerator] Available files: ${files.slice(0, 10).join(', ')}... (${files.length} total)`);
+  
+  // 1. Buscar en mapeo explícito primero
+  if (TEAM_NAME_TO_FILENAME[teamNameLower]) {
+    const mappedName = TEAM_NAME_TO_FILENAME[teamNameLower];
+    for (const file of files) {
+      const fileName = path.parse(file).name;
+      if (fileName.toLowerCase() === mappedName.toLowerCase()) {
+        console.log(`[ImageGenerator] ✅ Mapped match found: ${file}`);
+        return path.join(logoFolder, file);
+      }
+    }
+  }
+  
+  // 2. Buscar coincidencia exacta (nombre normalizado sin espacios)
   for (const file of files) {
     const fileName = path.parse(file).name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (fileName === normalizedName || fileName.includes(normalizedName) || normalizedName.includes(fileName)) {
+    if (fileName === normalizedName) {
+      console.log(`[ImageGenerator] ✅ Exact match found: ${file}`);
       return path.join(logoFolder, file);
     }
   }
+  
+  // 3. Buscar coincidencia parcial (substring)
+  for (const file of files) {
+    const fileName = path.parse(file).name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    // Si el nombre normalizado contiene el nombre del archivo o viceversa
+    if (fileName.includes(normalizedName) || normalizedName.includes(fileName)) {
+      // Verificar que la coincidencia sea significativa (al menos 5 caracteres)
+      const minLength = Math.min(fileName.length, normalizedName.length);
+      if (minLength >= 5) {
+        console.log(`[ImageGenerator] ✅ Substring match found: ${file} (${fileName} <-> ${normalizedName})`);
+        return path.join(logoFolder, file);
+      }
+    }
+  }
+  
+  // 4. Buscar por palabras clave (para nombres compuestos)
+  const teamWords = teamNameLower.split(/\s+/).filter(w => w.length > 3 && !['city', 'the', 'and', 'of'].includes(w));
+  if (teamWords.length > 0) {
+    for (const file of files) {
+      const fileName = path.parse(file).name.toLowerCase();
+      // Verificar si al menos 2 palabras del equipo están en el nombre del archivo
+      const matchingWords = teamWords.filter(word => fileName.includes(word));
+      if (matchingWords.length >= Math.min(2, teamWords.length)) {
+        console.log(`[ImageGenerator] ✅ Keyword match found: ${file} (matching words: ${matchingWords.join(', ')})`);
+        return path.join(logoFolder, file);
+      }
+    }
+  }
+  
+  console.warn(`[ImageGenerator] ❌ No match found for "${teamName}" (normalized: "${normalizedName}")`);
 
   // Fallback: logo genérico
   const genericPath = path.join(teamsBasePath, 'generico.png');
@@ -247,15 +314,21 @@ function drawFinalText(ctx, width, height) {
  * Genera una imagen de resultado de partido usando Canvas
  */
 export async function generateMatchResultImage(gameData, options = {}) {
+  console.log(`[ImageGenerator] 🎨 Starting image generation for: ${gameData.awayTeam?.name} vs ${gameData.homeTeam?.name}`);
+  console.log(`[ImageGenerator] 📊 Scores: ${gameData.awayTeam?.score} - ${gameData.homeTeam?.score}`);
+  console.log(`[ImageGenerator] 🏆 Sport: ${gameData.sport}, League: ${gameData.league}`);
+  
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const canvas = createCanvas(opts.width, opts.height);
   const ctx = canvas.getContext('2d');
 
   // 1. Fondo con gradiente
+  console.log(`[ImageGenerator] 🎨 Step 1: Drawing background...`);
   drawBackground(ctx, opts.width, opts.height);
 
   // 2. Título de la liga
   const leagueName = gameData.league || gameData.sport.toUpperCase();
+  console.log(`[ImageGenerator] 🎨 Step 2: Drawing league title: ${leagueName}`);
   drawLeagueTitle(ctx, leagueName, opts.width);
 
   // 3. Determinar ganador
@@ -269,6 +342,7 @@ export async function generateMatchResultImage(gameData, options = {}) {
   const awayX = centerX - 240;
   const homeX = centerX + 240;
 
+  console.log(`[ImageGenerator] 🎨 Step 3: Drawing away team: ${gameData.awayTeam.name}`);
   await drawTeam(
     ctx,
     gameData.awayTeam,
@@ -279,6 +353,7 @@ export async function generateMatchResultImage(gameData, options = {}) {
     gameData.league
   );
 
+  console.log(`[ImageGenerator] 🎨 Step 4: Drawing home team: ${gameData.homeTeam.name}`);
   await drawTeam(
     ctx,
     gameData.homeTeam,
@@ -290,6 +365,7 @@ export async function generateMatchResultImage(gameData, options = {}) {
   );
 
   // 5. Línea divisoria entre equipos (VS)
+  console.log(`[ImageGenerator] 🎨 Step 5: Drawing divider and VS text...`);
   ctx.strokeStyle = '#FFFFFF40';
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -299,16 +375,20 @@ export async function generateMatchResultImage(gameData, options = {}) {
   
   // Texto "VS" en el centro
   ctx.fillStyle = '#FFFFFF80';
-  ctx.font = 'bold 32px "Arial", "Helvetica", sans-serif'; // Usar fuentes del sistema
+  ctx.font = 'bold 32px "Arial", "Helvetica", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('VS', centerX, teamY + 200);
 
   // 6. Texto "FINAL"
+  console.log(`[ImageGenerator] 🎨 Step 6: Drawing FINAL text...`);
   drawFinalText(ctx, opts.width, opts.height);
 
   // 7. Convertir a buffer PNG
-  return canvas.toBuffer('image/png');
+  console.log(`[ImageGenerator] ✅ Image generation complete, converting to PNG...`);
+  const buffer = canvas.toBuffer('image/png');
+  console.log(`[ImageGenerator] ✅ PNG buffer created: ${buffer.length} bytes`);
+  return buffer;
 }
 
 
