@@ -229,10 +229,12 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   const nameY = logoY + logoSize + 25;
   const scoreY = nameY + 60;
 
-  // Logo del equipo
+  // Logo del equipo - Aislar completamente con save/restore
   try {
     const logo = await loadTeamLogo(team.name, sport, league);
     if (logo) {
+      ctx.save(); // Aislar el logo completamente
+      
       const logoX = x - logoSize / 2;
       
       // Dibujar logo con sombra sutil
@@ -243,18 +245,20 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
       
       ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
       
-      // Resetear sombra
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
+      ctx.restore(); // Esto resetea TODAS las propiedades, incluyendo sombras
     }
   } catch (error) {
     console.warn(`[ImageGenerator] Could not load logo for ${team.name}:`, error.message);
   }
 
-  // Nombre del equipo - Asegurar que se dibuje
+  // Nombre del equipo - Dibujar DESPUÉS del logo, completamente aislado
   ctx.save();
+  
+  // Asegurar que NO hay sombras
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   
   // Configurar estilo de texto
   ctx.fillStyle = '#0052A5'; // Azul StreamBox
@@ -274,8 +278,14 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   
   ctx.restore();
 
-  // Marcador - Asegurar que se dibuje (en un save/restore separado)
+  // Marcador - Dibujar en un contexto completamente separado
   ctx.save();
+  
+  // Asegurar que NO hay sombras
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
   
   ctx.fillStyle = '#E41E26'; // Rojo StreamBox
   ctx.font = 'bold 96px Arial, Helvetica, sans-serif';
