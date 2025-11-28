@@ -260,20 +260,29 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   
-  // Configurar estilo de texto
-  ctx.fillStyle = '#0052A5'; // Azul StreamBox
-  ctx.font = 'bold 44px Arial, Helvetica, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  
   // Truncar nombre si es muy largo
   let teamName = team.name || 'Team';
   if (teamName.length > 18) {
     teamName = teamName.substring(0, 18) + '...';
   }
   
+  // Medir el texto para dibujar un fondo
+  ctx.font = 'bold 44px Arial, Helvetica, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const textMetrics = ctx.measureText(teamName.toUpperCase());
+  const textWidth = textMetrics.width;
+  const textHeight = 50; // Aproximado para 44px font
+  
+  // Dibujar fondo semi-transparente para el texto (opcional, para debug)
+  // ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+  // ctx.fillRect(x - textWidth / 2 - 10, nameY - 5, textWidth + 20, textHeight + 10);
+  
+  // Configurar estilo de texto
+  ctx.fillStyle = '#0052A5'; // Azul StreamBox
+  
   // Dibujar nombre del equipo
-  console.log(`[ImageGenerator] Drawing team name: "${teamName.toUpperCase()}" at (${x}, ${nameY})`);
+  console.log(`[ImageGenerator] Drawing team name: "${teamName.toUpperCase()}" at (${x}, ${nameY}), width: ${textWidth}`);
   ctx.fillText(teamName.toUpperCase(), x, nameY);
   
   ctx.restore();
@@ -287,14 +296,24 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   
-  ctx.fillStyle = '#E41E26'; // Rojo StreamBox
+  const scoreText = (team.score || 0).toString();
+  
+  // Configurar fuente y medir texto
   ctx.font = 'bold 96px Arial, Helvetica, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
+  const scoreMetrics = ctx.measureText(scoreText);
+  const scoreWidth = scoreMetrics.width;
+  const scoreHeight = 110; // Aproximado para 96px font
+  
+  // Dibujar fondo semi-transparente para el marcador (opcional, para debug)
+  // ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+  // ctx.fillRect(x - scoreWidth / 2 - 10, scoreY - 5, scoreWidth + 20, scoreHeight + 10);
+  
+  ctx.fillStyle = '#E41E26'; // Rojo StreamBox
   
   // Dibujar marcador
-  const scoreText = (team.score || 0).toString();
-  console.log(`[ImageGenerator] Drawing score: "${scoreText}" at (${x}, ${scoreY})`);
+  console.log(`[ImageGenerator] Drawing score: "${scoreText}" at (${x}, ${scoreY}), width: ${scoreWidth}`);
   ctx.fillText(scoreText, x, scoreY);
   
   ctx.restore();
