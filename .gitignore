@@ -3,7 +3,6 @@ node_modules/
 *.log
 .DS_Store
 
-# Excluir logos de equipos (son muy grandes para GitHub)
-# Los logos se subirán manualmente o se usarán desde otro lugar
-public/teams/
+# Logos de equipos incluidos en el repositorio para Render
+# public/teams/  (incluidos - Render los descargará automáticamente)
 
