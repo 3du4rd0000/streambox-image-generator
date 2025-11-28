@@ -307,17 +307,68 @@ function drawLeagueTitle(ctx, league, width) {
 /**
  * Dibuja un equipo completo (logo, nombre, marcador)
  */
+/**
+ * Carga un dígito como imagen desde la carpeta public/digits/
+ */
+async function loadDigit(digit) {
+  try {
+    const digitPath = path.join(__dirname, '../public/digits', `${digit}.png`);
+    if (fs.existsSync(digitPath)) {
+      return await loadImage(digitPath);
+    }
+    console.warn(`[ImageGenerator] Digit ${digit}.png not found, using fallback`);
+    return null;
+  } catch (error) {
+    console.warn(`[ImageGenerator] Error loading digit ${digit}:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Dibuja un score usando imágenes de dígitos
+ */
+async function drawScoreWithDigits(ctx, score, x, y) {
+  const scoreText = (score || 0).toString();
+  const digitWidth = 80; // Ancho de cada dígito
+  const digitHeight = 120; // Alto de cada dígito
+  const digitSpacing = 10; // Espacio entre dígitos
+  
+  // Calcular posición inicial (centrado)
+  const totalWidth = (scoreText.length * digitWidth) + ((scoreText.length - 1) * digitSpacing);
+  let currentX = x - totalWidth / 2;
+  
+  // Dibujar cada dígito
+  for (let i = 0; i < scoreText.length; i++) {
+    const digit = scoreText[i];
+    const digitImage = await loadDigit(digit);
+    
+    if (digitImage) {
+      ctx.drawImage(digitImage, currentX, y - digitHeight / 2, digitWidth, digitHeight);
+    } else {
+      // Fallback: dibujar texto si no hay imagen del dígito
+      ctx.save();
+      ctx.fillStyle = '#E41E26';
+      ctx.font = 'bold 120px Arial, Helvetica, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(digit, currentX, y);
+      ctx.restore();
+    }
+    
+    currentX += digitWidth + digitSpacing;
+  }
+}
+
 async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
   const logoSize = 200;
   const logoY = y;
-  const nameY = logoY + logoSize + 25;
-  const scoreY = y + logoSize + 150; // Ajustar posición del marcador (más abajo)
+  const scoreY = y + logoSize + 150; // Posición del marcador debajo del logo
 
-  // Logo del equipo - Aislar completamente con save/restore
+  // Logo del equipo
   try {
     const logo = await loadTeamLogo(team.name, sport, league);
     if (logo) {
-      ctx.save(); // Aislar el logo completamente
+      ctx.save();
       
       const logoX = x - logoSize / 2;
       
@@ -329,77 +380,15 @@ async function drawTeam(ctx, team, x, y, isWinner, sport, league) {
       
       ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
       
-      ctx.restore(); // Esto resetea TODAS las propiedades, incluyendo sombras
+      ctx.restore();
     }
   } catch (error) {
     console.warn(`[ImageGenerator] Could not load logo for ${team.name}:`, error.message);
   }
 
-  // Nombre del equipo - Solo dibujar si no hay imagen de fondo (opcional)
-  // Por ahora lo comentamos ya que estará en la imagen de fondo
-  // Si quieres nombres dinámicos, descomenta esto:
-  /*
-  ctx.save();
-  
-  let teamName = team.name || 'Team';
-  if (teamName.length > 18) {
-    teamName = teamName.substring(0, 18) + '...';
-  }
-  
-  ctx.font = 'bold 44px Arial, Helvetica, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  const textMetrics = ctx.measureText(teamName.toUpperCase());
-  const textWidth = textMetrics.width;
-  const textHeight = 50;
-  
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-  ctx.fillRect(x - textWidth / 2 - 15, nameY - 5, textWidth + 30, textHeight + 10);
-  
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
-  
-  ctx.fillStyle = '#0052A5';
-  
-  console.log(`[ImageGenerator] Drawing team name: "${teamName.toUpperCase()}" at (${x}, ${nameY})`);
-  ctx.fillText(teamName.toUpperCase(), x, nameY);
-  
-  ctx.restore();
-  */
-
-  // Marcador - ESTE ES EL ELEMENTO MÁS IMPORTANTE, debe dibujarse siempre
-  ctx.save();
-  
-  const scoreText = (team.score || 0).toString();
-  
-  // Configurar fuente grande y visible para el marcador
-  ctx.font = 'bold 120px Arial, Helvetica, sans-serif'; // Más grande para mejor visibilidad
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle'; // Cambiar a middle para mejor alineación
-  const scoreMetrics = ctx.measureText(scoreText);
-  const scoreWidth = scoreMetrics.width;
-  const scoreHeight = 140;
-  
-  // Dibujar fondo sólido blanco detrás del marcador para máxima visibilidad
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // Casi opaco
-  ctx.fillRect(x - scoreWidth / 2 - 20, scoreY - scoreHeight / 2 - 10, scoreWidth + 40, scoreHeight + 20);
-  
-  // Asegurar que NO hay sombras
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
-  
-  // Color del marcador: rojo StreamBox
-  ctx.fillStyle = '#E41E26';
-  
-  // Dibujar marcador
-  console.log(`[ImageGenerator] Drawing score: "${scoreText}" at (${x}, ${scoreY}), width: ${scoreWidth}`);
-  ctx.fillText(scoreText, x, scoreY);
-  
-  ctx.restore();
+  // Marcador usando imágenes de dígitos
+  console.log(`[ImageGenerator] Drawing score with digits: ${team.score} at (${x}, ${scoreY})`);
+  await drawScoreWithDigits(ctx, team.score, x, scoreY);
 }
 
 /**
@@ -452,10 +441,7 @@ export async function generateMatchResultImage(gameData, options = {}) {
   console.log(`[ImageGenerator] 🎨 Step 1: Drawing background...`);
   await drawBackground(ctx, opts.width, opts.height);
 
-  // 2. Título de la liga
-  const leagueName = gameData.league || gameData.sport.toUpperCase();
-  console.log(`[ImageGenerator] 🎨 Step 2: Drawing league title: ${leagueName}`);
-  drawLeagueTitle(ctx, leagueName, opts.width);
+  // 2. Título de liga eliminado - no se muestra
 
   // 3. Determinar ganador
   const winner = gameData.awayTeam.score > gameData.homeTeam.score 
