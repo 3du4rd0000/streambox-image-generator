@@ -67,6 +67,14 @@ const TEAM_NAME_TO_FILENAME = {
   // MLB
   'los angeles dodgers': 'LosAngelesDodgers',
   'toronto blue jays': 'TorontoBlueJays',
+  // NBA
+  'miami heat': 'heat',
+  'miami': 'heat',
+  'heat': 'heat',
+  // NHL
+  'minnesota wild': 'wild',
+  'minnesota': 'wild',
+  'wild': 'wild',
   // Agregar más según sea necesario
 };
 
@@ -148,15 +156,24 @@ function findTeamLogo(teamName, sport, league) {
   }
   
   // 4. Buscar por palabras clave (para nombres compuestos)
-  const teamWords = teamNameLower.split(/\s+/).filter(w => w.length > 3 && !['city', 'the', 'and', 'of'].includes(w));
+  const teamWords = teamNameLower.split(/\s+/).filter(w => w.length > 2 && !['city', 'the', 'and', 'of', 'los', 'las', 'san', 'saint'].includes(w));
   if (teamWords.length > 0) {
     for (const file of files) {
       const fileName = path.parse(file).name.toLowerCase();
-      // Verificar si al menos 2 palabras del equipo están en el nombre del archivo
-      const matchingWords = teamWords.filter(word => fileName.includes(word));
-      if (matchingWords.length >= Math.min(2, teamWords.length)) {
+      // Verificar si al menos 1 palabra significativa del equipo está en el nombre del archivo
+      // (reducido de 2 a 1 para casos como "Minnesota Wild" -> "wild")
+      const matchingWords = teamWords.filter(word => fileName.includes(word) || word.includes(fileName));
+      if (matchingWords.length >= 1 && teamWords.length > 1) {
+        // Si hay múltiples palabras, requerir al menos 1 coincidencia
         console.log(`[ImageGenerator] ✅ Keyword match found: ${file} (matching words: ${matchingWords.join(', ')})`);
         return path.join(logoFolder, file);
+      } else if (matchingWords.length >= 1 && teamWords.length === 1) {
+        // Si solo hay una palabra, verificar que sea una coincidencia significativa
+        const word = teamWords[0];
+        if (word.length >= 4 && (fileName === word || fileName.includes(word) || word.includes(fileName))) {
+          console.log(`[ImageGenerator] ✅ Single keyword match found: ${file} (word: ${word})`);
+          return path.join(logoFolder, file);
+        }
       }
     }
   }
