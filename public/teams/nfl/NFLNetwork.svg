@@ -1,0 +1,29 @@
+<svg width="600" height="300" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Azul arriba izquierda, rojo abajo derecha -->
+    <linearGradient id="bgDiag" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0052A5"/>   <!-- Azul -->
+      <stop offset="50%" stop-color="#0052A5"/>
+      <stop offset="50%" stop-color="#E41E26"/>  <!-- Rojo -->
+      <stop offset="100%" stop-color="#E41E26"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo diagonal con bordes redondeados -->
+  <rect x="0" y="0" width="600" height="300" rx="30" ry="30" fill="url(#bgDiag)"/>
+
+  <!-- Texto NFL NETWORK -->
+  <text
+    x="50%"
+    y="52%"
+    dominant-baseline="middle"
+    text-anchor="middle"
+    font-family="'Anton', 'Impact', 'Oswald', sans-serif"
+    font-size="110"
+    font-weight="900"
+    letter-spacing="3"
+    fill="#FFFFFF"
+  >
+    NFL NETWORK
+  </text>
+</svg>

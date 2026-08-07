@@ -3,8 +3,16 @@ node_modules/
 *.log
 .DS_Store
 
-# Logos de equipos - NO incluir en Git (se descargan desde Vercel Blob Storage)
-public/teams/
+# 2026-08-07: public/teams/ volvió a Git. La exclusión original era por
+# tamaño (~45MB en aquel momento, ver SOLUCION_TAMANO_GITHUB.md) y forzaba
+# descargarlos de Vercel Blob en cada arranque del servicio (dependía de
+# BLOB_READ_WRITE_TOKEN configurado en Render; si faltaba, el servicio
+# arrancaba con /teams vacío sin avisar más que con un warning en logs).
+# El set actual pesa 6.4MB — muy por debajo de cualquier límite real de
+# GitHub — así que ya no compensa la fragilidad. src/download-logos.js se
+# deja como red de seguridad inerte (si algún día vuelve a haber logos sin
+# commitear, los baja de Blob; con git ya poblado, logosExistLocally() es
+# true y ni se ejecuta).
 *.tar.gz
 teams-logos.tar.gz
 
