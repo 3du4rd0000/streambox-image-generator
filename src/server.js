@@ -8,8 +8,14 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { generateMatchResultImage } from './image-generator.js';
 import { downloadLogosFromBlob, logosExistLocally } from './download-logos.js';
+
+// image-generator.js arrastra 'canvas', que compila bindings nativos (node-gyp
+// + Cairo) y es lo primero que revienta en un build de Render. Importarlo
+// arriba hacía que un fallo de canvas tumbara TODO el servicio, incluido servir
+// las imágenes estáticas — que es para lo único que la app lo usa hoy (no hay
+// una sola llamada a /generate-image en el cliente). Ahora se carga sólo al
+// atender ese endpoint: si canvas no está, falla esa petición y nada más.
 
 dotenv.config();
 
@@ -61,6 +67,9 @@ app.post('/generate-image', async (req, res) => {
     }
 
     console.log(`[API] Generating image for: ${gameData.awayTeam.name} vs ${gameData.homeTeam.name}`);
+
+    // Carga perezosa: 'canvas' sólo se necesita aquí (ver nota de los imports)
+    const { generateMatchResultImage } = await import('./image-generator.js');
 
     // Generar imagen
     const imageBuffer = await generateMatchResultImage(gameData);
