@@ -43,6 +43,23 @@ app.use(express.static(publicPath, { maxAge: '7d', immutable: true }));
 // rutas vivas para no romper aparatos que tarden en recibir la actualización.
 app.use('/team-logos', express.static(path.join(publicPath, 'teams'), { maxAge: '7d', immutable: true }));
 
+
+// ── TEMPORAL · diagnóstico L3 (iPhone) ─────────────────────────────────────
+// Buzón de logs en memoria para depurar aparatos donde la red local de iOS
+// bloquea el receptor del Mac. QUITAR al cerrar el diagnóstico.
+const __diagLogs = [];
+app.post('/diag-log', (req, res) => {
+  try {
+    const t = (req.body && req.body.text) ? String(req.body.text).slice(0, 500) : '';
+    if (t) { __diagLogs.push(t); if (__diagLogs.length > 800) __diagLogs.shift(); }
+  } catch (_) {}
+  res.json({ ok: true });
+});
+app.get('/diag-logs', (req, res) => {
+  if (req.query.k !== 'sbx-l3-2026') return res.status(404).end();
+  res.type('text/plain').send(__diagLogs.join('\n'));
+});
+// ───────────────────────────────────────────────────────────────────────────
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'image-generator' });
