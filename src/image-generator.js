@@ -78,18 +78,7 @@ const TEAM_NAME_TO_FILENAME = {
   // Agregar más según sea necesario
 };
 
-/**
- * Normaliza el nombre del equipo para buscar el logo
- * NO elimina palabras importantes como "city", "chiefs", etc.
- */
-function normalizeTeamName(teamName) {
-  return teamName
-    .toLowerCase()
-    .replace(/\b(fc|cf|sc|deportivo|club|team|united|athletic|real|inter|ac|borussia)\b/gi, '')
-    .replace(/[^a-z0-9\s]/g, '')
-    .replace(/\s+/g, '')
-    .trim();
-}
+import { normalizeTeamName } from './team-name.js';
 
 /**
  * Busca el logo de un equipo
