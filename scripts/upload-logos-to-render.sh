@@ -4,7 +4,7 @@
 # Requiere tener acceso SSH configurado en Render
 
 SERVICE_URL="streambox-image-generator.onrender.com"
-SOURCE_DIR="/Users/eduardoemouna/Documents/image-generator-service/public/teams"
+SOURCE_DIR="/Users/eduardoemouna/Documents/sstreamboxx/imagenes/public/teams"
 DEST_DIR="/opt/render/project/src/public/teams"
 
 echo "📤 Subiendo logos a Render..."
@@ -18,7 +18,7 @@ echo "Destino: $DEST_DIR en $SERVICE_URL"
 # Método 2: Comprimir y subir manualmente
 echo ""
 echo "📦 Comprimiendo logos..."
-cd /Users/eduardoemouna/Documents/image-generator-service
+cd /Users/eduardoemouna/Documents/sstreamboxx/imagenes
 tar -czf teams-logos.tar.gz public/teams/
 
 echo ""
